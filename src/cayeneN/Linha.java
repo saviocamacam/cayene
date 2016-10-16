@@ -4,19 +4,21 @@ import java.util.LinkedList;
 
 public class Linha {
 	private LinkedList<Caracteristica> caracteristicas;
-	private String classe;
+	private String classeReal;
+	private String classeSugerida;
+	private Double distancia;
 	
 	public Linha(String classe) {
-		this.setClasse(classe);
+		this.setClasseReal(classe);
 		this.caracteristicas = new LinkedList<>();
 	}
 
-	public String getClasse() {
-		return classe;
+	public String getClasseReal() {
+		return classeReal;
 	}
 
-	public void setClasse(String classe) {
-		this.classe = classe;
+	public void setClasseReal(String classe) {
+		this.classeReal = classe;
 	}
 
 	public LinkedList<Caracteristica> getCaracteristicas() {
@@ -28,12 +30,25 @@ public class Linha {
 	}
 
 	public void converteCaracteristicas(String[] vetorCaracteristicas) {
-		String nomeCaracteristica = "";
-		int i = 1;
-		for (String s : vetorCaracteristicas) {
-			if(s != "")
-				caracteristicas.add(new Caracteristica(nomeCaracteristica + i, s));
-			i++;
+		int i;
+		for (i = 0 ; i < vetorCaracteristicas.length-1 ; i++) {
+			caracteristicas.add(new Caracteristica("" + i, vetorCaracteristicas[i]));
 		}
+	}
+
+	public Double getDistancia() {
+		return distancia;
+	}
+
+	public void setDistancia(Double distancia) {
+		this.distancia = distancia;
+	}
+
+	public String getClasseSugerida() {
+		return classeSugerida;
+	}
+
+	public void setClasseSugerida(String classeSugerida) {
+		this.classeSugerida = classeSugerida;
 	}
 }

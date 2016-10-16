@@ -9,6 +9,7 @@ public class Caracteristica {
 	public Caracteristica(String nomeCaracteristica,String conteudo) {
 		this.setNomeCaracteristica(nomeCaracteristica);
 		this.setConteudo(conteudo);
+		this.setValor(Double.valueOf(conteudo));
 	}
 
 	public String getNomeCaracteristica() {
@@ -28,7 +29,6 @@ public class Caracteristica {
 	}
 
 	public Double getValor() {
-		valor = Double.valueOf(conteudo);
 		return valor;
 	}
 
