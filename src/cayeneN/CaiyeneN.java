@@ -10,25 +10,39 @@ import javax.swing.plaf.basic.BasicInternalFrameTitlePane.MaximizeAction;
 public class CaiyeneN {
 	
 	private Double proporcao;
-	List<String> linhasBrutas;
-	LinkedList<Linha> conjuntoEntrada;
+	List<String> linhasBrutasTreino;
+	List<String> linhasBrutasTeste;
+	LinkedList<Linha> conjuntoEntradaTreino;
+	LinkedList<Linha> conjuntoEntradaTeste;
 	LinkedList<Linha> conjuntoTreino;
 	LinkedList<Classe> conjuntoClasses;
 	private double matrizConfusao[][];
 	
-	public CaiyeneN(Double proporcao, List<String> linhasBrutas) {
+	public CaiyeneN(Double proporcao, List<String> linhasBrutasTreino) {
 		this.setProporcao(proporcao);
-		this.setLinhasBrutas(linhasBrutas);
-		conjuntoEntrada = new LinkedList<>();
+		this.setLinhasBrutasTreino(linhasBrutasTreino);
+		conjuntoEntradaTreino = new LinkedList<>();
 		conjuntoTreino = new LinkedList<>();
 		conjuntoClasses = new LinkedList<>();
-		converterLinhas();
+		converterLinhas(linhasBrutasTreino, conjuntoEntradaTreino);
 	}
 	
-	public CaiyeneN(List<String> linhasBrutas) {
-		this.setLinhasBrutas(linhasBrutas);
-		conjuntoEntrada = new LinkedList<>();
-		converterLinhas();
+	public CaiyeneN(List<String> linhasBrutasTreino) {
+		this.setLinhasBrutasTreino(linhasBrutasTreino);
+		conjuntoEntradaTreino = new LinkedList<>();
+		converterLinhas(linhasBrutasTreino, conjuntoEntradaTreino);
+	}
+
+	public CaiyeneN(Double proporcao, List<String> linhasBrutasTreino, List<String> linhasBrutasTeste) {
+		this.setProporcao(proporcao);
+		this.setLinhasBrutasTreino(linhasBrutasTreino);
+		this.setLinhasBrutasTeste(linhasBrutasTeste);
+		conjuntoEntradaTreino = new LinkedList<>();
+		conjuntoEntradaTeste = new LinkedList<>();
+		conjuntoClasses = new LinkedList<>();
+		conjuntoTreino = new LinkedList<>();
+		converterLinhas(linhasBrutasTreino, conjuntoEntradaTreino);
+		converterLinhas(linhasBrutasTeste, conjuntoEntradaTeste);
 	}
 
 	public Double getProporcao() {
@@ -39,13 +53,10 @@ public class CaiyeneN {
 		this.proporcao = proporcao;
 	}
 	
-	public void treinar(int k) {
+	public void paranaue(LinkedList<Linha> conjuntoEntrada, int k) {
 		int i, posLinha = -1, posCol = -1;
-		normalizarValores();
-		randomizaLinhas();
-		setMatrizConfusao();
 		
-		for (Linha linhaTreino : conjuntoTreino) {
+		/*for (Linha linhaTreino : conjuntoTreino) {
 			for (Linha linhaTeste : conjuntoEntrada) {
 				linhaTeste.setDistancia(executaCalculo(linhaTreino, linhaTeste));
 			}
@@ -68,6 +79,31 @@ public class CaiyeneN {
 				vizinhosProximos.add(conjuntoEntrada.get(i));
 			}
 			linhaTreino.setClasseSugerida(buscarClasseSugerida(vizinhosProximos));
+		}*/
+		
+		for (Linha linhaTeste : conjuntoEntrada) {
+			for (Linha linhaTreino : conjuntoTreino) {
+				linhaTreino.setDistancia(executaCalculo(linhaTreino, linhaTeste));
+			}
+			conjuntoTreino.sort(new Comparator<Linha>() {
+				@Override
+				public int compare(Linha o1, Linha o2) {
+					
+					if(o1.getDistancia() > o2.getDistancia())
+						return 1;
+					else if (o1.getDistancia() == o2.getDistancia())
+						return 0;
+					else 
+						return -1;
+				}
+			});
+			
+			LinkedList<Linha> vizinhosProximos = new LinkedList<>();
+			
+			for (i=0 ; i<k ; i++) {
+				vizinhosProximos.add(conjuntoEntrada.get(i));
+			}
+			linhaTeste.setClasseSugerida(buscarClasseSugerida(vizinhosProximos));
 		}
 		double maximoGeral = 0;
 		for(Classe classeLinha : conjuntoClasses) {
@@ -94,6 +130,21 @@ public class CaiyeneN {
 		}
 		imprimeMatrizConfusao();
 		System.out.println("Porcentagem geral de acerto: " + (maximoGeral * 100 ) / conjuntoTreino.size());
+	}
+	
+	public void crossValidation(int k) {
+		normalizarValores(conjuntoEntradaTreino, linhasBrutasTreino);
+		randomizaLinhas();
+		setMatrizConfusao();
+		paranaue(conjuntoEntradaTreino, k);
+	}
+	
+	public void testar(int k) {
+		normalizarValores(conjuntoEntradaTreino, linhasBrutasTreino);
+		normalizarValores(conjuntoEntradaTeste, linhasBrutasTeste);
+		randomizaLinhas();
+		setMatrizConfusao();
+		paranaue(conjuntoEntradaTeste, k);
 	}
 	
 	private void imprimeMatrizConfusao() {
@@ -165,8 +216,8 @@ public class CaiyeneN {
 		int n, contagem = 0;
 		double tamanhoProporcao;
 		
-		while(!conjuntoEntrada.isEmpty()) {
-			Linha linha = conjuntoEntrada.pop();
+		while(!conjuntoEntradaTreino.isEmpty()) {
+			Linha linha = conjuntoEntradaTreino.pop();
 			for(Classe classe : conjuntoClasses) {
 				if(classe.getNomeClasse().equals(linha.getClasseReal()))
 					classe.getLinhas().add(linha);
@@ -185,13 +236,13 @@ public class CaiyeneN {
 			}
 			
 			while(!classe.getLinhas().isEmpty()) {
-				conjuntoEntrada.add(classe.getLinhas().removeFirst());
+				conjuntoEntradaTreino.add(classe.getLinhas().removeFirst());
 			}
 		}
 	}
 
-	public void normalizarValores() {
-		LinkedList<TipoCaracteristica> conjuntoCaracteristicas = extrairCaracteristicas();
+	public void normalizarValores(LinkedList<Linha> conjuntoEntrada, List<String> linhasBrutas) {
+		LinkedList<TipoCaracteristica> conjuntoCaracteristicas = extrairCaracteristicas(conjuntoEntrada, linhasBrutas);
 		
 		for (Linha linha : conjuntoEntrada) {
 			for (Caracteristica caracteristica : linha.getCaracteristicas()) {
@@ -207,7 +258,7 @@ public class CaiyeneN {
 		return valorNorma;
 	}
 
-	private LinkedList<TipoCaracteristica> extrairCaracteristicas() {
+	private LinkedList<TipoCaracteristica> extrairCaracteristicas(LinkedList<Linha> conjuntoEntrada, List<String> linhasBrutas) {
 		int i;
 		LinkedList<TipoCaracteristica> conjuntoCaracteristicas = new LinkedList<>();
 		
@@ -240,8 +291,9 @@ public class CaiyeneN {
 		return false;
 	}
 
-	private void converterLinhas() {
-		for (String linha : linhasBrutas) {
+	private void converterLinhas(List<String> linhasBrutasTreino, LinkedList<Linha> conjuntoEntrada) {
+		
+		for (String linha : linhasBrutasTreino) {
 			String[] vetorCaracteristicas = linha.substring(0).split(", ");
 			Linha linhaConvertida = new Linha(vetorCaracteristicas[vetorCaracteristicas.length-1]);
 			linhaConvertida.converteCaracteristicas(vetorCaracteristicas);
@@ -249,12 +301,12 @@ public class CaiyeneN {
 		}
 	}
 
-	public List<String> getLinhasBrutas() {
-		return linhasBrutas;
+	public List<String> getLinhasBrutasTreino() {
+		return linhasBrutasTreino;
 	}
 
-	public void setLinhasBrutas(List<String> linhasBrutas) {
-		this.linhasBrutas = linhasBrutas;
+	public void setLinhasBrutasTreino(List<String> linhasBrutas) {
+		this.linhasBrutasTreino = linhasBrutas;
 	}
 
 	public double[][] getMatrizConfusao() {
@@ -263,6 +315,22 @@ public class CaiyeneN {
 
 	public void setMatrizConfusao() {
 		this.matrizConfusao = new double[conjuntoClasses.size()][conjuntoClasses.size()+1];
+	}
+
+	public List<String> getLinhasBrutasTeste() {
+		return linhasBrutasTeste;
+	}
+
+	public void setLinhasBrutasTeste(List<String> linhasBrutasTeste) {
+		this.linhasBrutasTeste = linhasBrutasTeste;
+	}
+
+	public LinkedList<Linha> getConjuntoEntradaTeste() {
+		return conjuntoEntradaTeste;
+	}
+
+	public void setConjuntoEntradaTeste(LinkedList<Linha> conjuntoEntradaTeste) {
+		this.conjuntoEntradaTeste = conjuntoEntradaTeste;
 	}
 
 }

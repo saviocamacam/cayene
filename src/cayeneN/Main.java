@@ -10,7 +10,9 @@ public class Main {
 	public static void main(String[] args) {
 		int opcaoMenu = 0;
 		scanner = new Scanner(System.in);
-		List<String> linhasBrutas = null;
+		List<String> linhasBrutasTreino = null;
+		List<String> linhasBrutasTeste = null;
+		
 		String nomeArquivo = "";
 		int k = 0;
 		CaiyeneN cayene = null;
@@ -27,28 +29,39 @@ public class Main {
 				System.out.print("> Nome do arquivo de treino: ");
 				//nomeArquivo = scanner.next();
 				nomeArquivo = "treino.data";
-				linhasBrutas = GerenciadorArquivo.lerArquivo(nomeArquivo);
+				linhasBrutasTreino = GerenciadorArquivo.lerArquivo(nomeArquivo);
 				
 				System.out.println("Proporcao: 25, 50 ou 100?");
 				Double proporcao = scanner.nextDouble();
 				//Double proporcao = 25.0;
-				cayene = new CaiyeneN(proporcao, linhasBrutas);
+				cayene = new CaiyeneN(proporcao, linhasBrutasTreino);
 				
 				System.out.print("K? ");
 				k = scanner.nextInt();
 				//k = 3;
-				cayene.treinar(k);
+				cayene.crossValidation(k);
 			}
 			
 			if(opcaoMenu == 2) {
+				System.out.print("> Nome do arquivo de treino: ");
+				//nomeArquivo = scanner.next();
+				nomeArquivo = "treino.data";
+				linhasBrutasTreino = GerenciadorArquivo.lerArquivo(nomeArquivo);
+				
 				System.out.print("> Nome do arquivo de teste: ");
-				nomeArquivo = scanner.next();
-				linhasBrutas = GerenciadorArquivo.lerArquivo(nomeArquivo);
+				//nomeArquivo = scanner.next();
+				nomeArquivo = "teste.data";
+				linhasBrutasTeste = GerenciadorArquivo.lerArquivo(nomeArquivo);
+				
+				System.out.println("Proporcao: 25, 50 ou 100?");
+				Double proporcao = scanner.nextDouble();
+				//Double proporcao = 25.0;
 				
 				System.out.print("K? ");
 				k = scanner.nextInt();
-				cayene = new CaiyeneN(linhasBrutas);
-				cayene.treinar(k);
+				//k = 3;
+				cayene = new CaiyeneN(proporcao, linhasBrutasTreino, linhasBrutasTeste);
+				cayene.testar(k);
 			}
 			
 		} while (opcaoMenu != 7);
