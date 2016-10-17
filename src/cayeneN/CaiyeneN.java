@@ -5,6 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane.MaximizeAction;
+
 public class CaiyeneN {
 	
 	private Double proporcao;
@@ -12,7 +14,7 @@ public class CaiyeneN {
 	LinkedList<Linha> conjuntoEntrada;
 	LinkedList<Linha> conjuntoTreino;
 	LinkedList<Classe> conjuntoClasses;
-	private int matrizConfusao[][];
+	private double matrizConfusao[][];
 	
 	public CaiyeneN(Double proporcao, List<String> linhasBrutas) {
 		this.setProporcao(proporcao);
@@ -67,13 +69,13 @@ public class CaiyeneN {
 			}
 			linhaTreino.setClasseSugerida(buscarClasseSugerida(vizinhosProximos));
 		}
-		
+		double maximoGeral = 0;
 		for(Classe classeLinha : conjuntoClasses) {
 			
 			classeLinha.setLinhas(buscarLinhasPorClasse(classeLinha.getNomeClasse()));
-			
+			double count = 0.0, maximo = -99999.0;
 			for(Classe classeColuna : conjuntoClasses) {
-				int count = 0;
+				count = 0;
 				
 				for(Linha linha : classeLinha.getLinhas()) {
 					if(linha.getClasseSugerida().equals(classeColuna.getNomeClasse()))
@@ -83,18 +85,21 @@ public class CaiyeneN {
 				posCol = conjuntoClasses.indexOf(new Classe(classeColuna.getNomeClasse()));
 				
 				matrizConfusao[posLinha][posCol] = count;
+				if(count > maximo)
+					maximo = count;
 				
-				
-				System.out.println("aqui");
 			}
+			maximoGeral = maximoGeral + maximo;
+			matrizConfusao[posLinha][posCol+1] = maximo * 100 / classeLinha.getLinhas().size();
 		}
 		imprimeMatrizConfusao();
+		System.out.println("Porcentagem geral de acerto: " + (maximoGeral * 100 ) / conjuntoTreino.size());
 	}
 	
 	private void imprimeMatrizConfusao() {
 		int i, j;
 		for(i = 0 ; i < conjuntoClasses.size() ; i++) {
-			for (j = 0 ; j < conjuntoClasses.size() ; j++) {
+			for (j = 0 ; j <= conjuntoClasses.size() ; j++) {
 				System.out.print(matrizConfusao[i][j] + "\t");
 			}
 			System.out.println("");
@@ -252,12 +257,12 @@ public class CaiyeneN {
 		this.linhasBrutas = linhasBrutas;
 	}
 
-	public int[][] getMatrizConfusao() {
+	public double[][] getMatrizConfusao() {
 		return matrizConfusao;
 	}
 
 	public void setMatrizConfusao() {
-		this.matrizConfusao = new int[conjuntoClasses.size()][conjuntoClasses.size()];
+		this.matrizConfusao = new double[conjuntoClasses.size()][conjuntoClasses.size()+1];
 	}
 
 }
