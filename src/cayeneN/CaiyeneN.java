@@ -101,14 +101,14 @@ public class CaiyeneN {
 			LinkedList<Linha> vizinhosProximos = new LinkedList<>();
 			
 			for (i=0 ; i<k ; i++) {
-				vizinhosProximos.add(conjuntoEntrada.get(i));
+				vizinhosProximos.add(conjuntoTreino.get(i));
 			}
 			linhaTeste.setClasseSugerida(buscarClasseSugerida(vizinhosProximos));
 		}
 		double maximoGeral = 0;
 		for(Classe classeLinha : conjuntoClasses) {
 			
-			classeLinha.setLinhas(buscarLinhasPorClasse(classeLinha.getNomeClasse()));
+			classeLinha.setLinhas(buscarLinhasPorClasse(classeLinha.getNomeClasse(), conjuntoEntrada));
 			double count = 0.0, maximo = -99999.0;
 			for(Classe classeColuna : conjuntoClasses) {
 				count = 0;
@@ -129,7 +129,7 @@ public class CaiyeneN {
 			matrizConfusao[posLinha][posCol+1] = maximo * 100 / classeLinha.getLinhas().size();
 		}
 		imprimeMatrizConfusao();
-		System.out.println("Porcentagem geral de acerto: " + (maximoGeral * 100 ) / conjuntoTreino.size());
+		System.out.println("Porcentagem geral de acerto: " + (maximoGeral * 100 ) / conjuntoEntrada.size());
 	}
 	
 	public void crossValidation(int k) {
@@ -157,9 +157,9 @@ public class CaiyeneN {
 		}
 	}
 
-	private LinkedList<Linha> buscarLinhasPorClasse(String nomeClasse) {
+	private LinkedList<Linha> buscarLinhasPorClasse(String nomeClasse, LinkedList<Linha> conjuntoEntrada) {
 		LinkedList<Linha> linhasPorClasse = new LinkedList<>();
-		for (Linha linha : conjuntoTreino) {
+		for (Linha linha : conjuntoEntrada) {
 			if(linha.getClasseReal().equals(nomeClasse))
 				linhasPorClasse.add(linha);
 		}
