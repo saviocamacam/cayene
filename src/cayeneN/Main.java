@@ -15,10 +15,10 @@ public class Main {
 		
 		String nomeArquivo = "";
 		int k = 0;
-		CaiyeneN cayene = null;
+		CayeneN cayene = null;
 		
 		do {
-			System.out.println("(1) TREINAR");
+			System.out.println("(1) CROSS-VALIDATION");
 			System.out.println("(2) TESTAR");
 			
 			System.out.print("Opcao: ");
@@ -33,8 +33,12 @@ public class Main {
 				
 				System.out.println("Proporcao: 25, 50 ou 100?");
 				Double proporcao = scanner.nextDouble();
-				//Double proporcao = 25.0;
-				cayene = new CaiyeneN(proporcao, linhasBrutasTreino);
+				while(proporcao < 1.0 || proporcao > 99.0) {
+					System.out.println("Valor inconsistente!\nNovo valor: ");
+					proporcao = scanner.nextDouble();
+				}
+
+				cayene = new CayeneN(proporcao, linhasBrutasTreino);
 				
 				System.out.print("K? ");
 				k = scanner.nextInt();
@@ -49,18 +53,22 @@ public class Main {
 				linhasBrutasTreino = GerenciadorArquivo.lerArquivo(nomeArquivo);
 				
 				System.out.print("> Nome do arquivo de teste: ");
-				//nomeArquivo = scanner.next();
+				
 				nomeArquivo = "teste.data";
 				linhasBrutasTeste = GerenciadorArquivo.lerArquivo(nomeArquivo);
 				
 				System.out.println("Proporcao: 25, 50 ou 100?");
 				Double proporcao = scanner.nextDouble();
-				//Double proporcao = 25.0;
+				
+				while(proporcao < 1.0 || proporcao > 100.0) {
+					System.out.println("Valor inconsistente!\nNovo valor: ");
+					proporcao = scanner.nextDouble();
+				}
 				
 				System.out.print("K? ");
 				k = scanner.nextInt();
-				//k = 3;
-				cayene = new CaiyeneN(proporcao, linhasBrutasTreino, linhasBrutasTeste);
+				
+				cayene = new CayeneN(proporcao, linhasBrutasTreino, linhasBrutasTeste);
 				cayene.testar(k);
 			}
 			
